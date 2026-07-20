@@ -3,24 +3,37 @@
 > 前提: これは「良い予測モデル」ではなく「有効な積付を返し続けるエージェント」を作る問題。
 > まず**減点(無効積付)を潰して有効なベースラインを出す** → **スコア項目を1つずつ上げる**、の順。
 > 締切 2026-10-19。チーム結成期限 2026-09-04。投稿は1日5回まで。仮説→検証で回す。
+> 仕様の詳細は [simulator-notes.md](simulator-notes.md)。CLI手順は [../../signate-cli.md](../../signate-cli.md)。
 
-## 最優先（今すぐ〜数日）— まず一周させる
-- [ ] `simulator.zip` をDLして展開（or SIGNATE CLI 導入してDL/投稿を自動化）
-- [ ] シミュレータのコード/README精読。特に確認するのは:
-  - [ ] オフライン/オンラインで**呼ばれる関数の入出力の型**（座標系・単位・姿勢の表現）
-  - [ ] ローカルで評価スコアを再現するスクリプトの有無（あれば手元で回せる＝命綱）
-  - [ ] 提出zipの構成ルール（エントリポイント、依存ライブラリ、実行方法）
-- [ ] **最小ベースラインを提出**して「投稿→リーダーボード反映」まで一周させる（パイプライン疎通を最優先）
+## 現状（2026-07-20）
+- [x] SIGNATE CLI 導入・トークン取得（Anaconda）。task_key/file_key 特定済み。
+- [x] simulator.zip DL・展開・仕様解析済み（`data/` 配下、gitignore）。
+- [ ] ↓ 次はローカル実行環境を通して、有効ベースラインを1本提出する。
+
+## 最優先（今すぐ〜数日）— ローカルで一周させる
+- [ ] 実行環境を用意（Python 3.10〜3.12）。Anaconda に専用env推奨:
+  - `conda create -n nedo python=3.11 -y && conda activate nedo`
+  - `pip install gymnasium==1.2.3 pybullet==3.2.7 pillow==10.3.0`
+  - `pip install torch==2.7.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu`
+  - ※ pybullet は Windows だとビルドで詰まることがある。ダメなら Docker（`docker compose up -d`）に切替。
+- [ ] サンプルをそのまま動かして疎通確認: `cd data/simulator/simulator && python -m scripts.run_test --render-mode human`
+  - サンプルは固定座標で置くだけなので、2個目以降で検証NGになるはず。まず「動く／results が出る」ことを確認。
+- [ ] `agents/submit/agent.py` を作り、**有効な積付を返すベースライン**を実装（下記フェーズ1）。
+- [ ] ローカルでスコアが出たら zip 化して**1回だけCLI投稿**し、LB反映まで疎通（`signate submit`）。
 
 ## フェーズ1: 有効なベースライン（Week 1-2）
-> 目標: NG(無効積付)を出さず、全課題パターンで最後まで積める土台。
-- [ ] オンライン: 貪欲配置（Deepest-Bottom-Left / 空きスペースに入る最初の有効姿勢）
-- [ ] オフライン: 単純ソート（体積大きい順 / 重い順）で順序を返すだけ
-- [ ] プロセス検証4項目を通す:
-  - [ ] コンテナ内包（LD3の斜め切り欠き形状を考慮した設置可能域）
-  - [ ] 搬入経路の干渉（手前から直線押し込み、1.5cmマージン）
-  - [ ] 定着（8cm上から落として崩れない支持面を選ぶ）
-- [ ] タイムアウト対策: 8秒/3分に収まる**高速フォールバック**を必ず用意（超過＝ランダム強制で崩壊するため）
+> 目標: NG(無効積付)を出さず、最後まで積める土台。「積めない＝fill以外0点」なのでここが全て。
+> 設計方針: policy 内で「置ける場所」を自前探索して返す。サンプルの固定座標は捨てる。
+- [ ] `optimize`: まず体積大きい順ソート（サンプル流用でOK）
+- [ ] `policy` ベースライン（貪欲・Bottom-Left系）:
+  - [ ] `container_list[c].packed_items` で現在の占有を把握（各荷物 pos/orn/寸法）
+  - [ ] 内寸（length/width/height − thickness）＋**上部の斜め切り欠き cut_x/cut_y** を制約に入れる
+  - [ ] 候補位置を離散走査（床から、奥Y+→手前Y-、左右X、低Z優先）× orientation 0〜5
+  - [ ] 各候補で「内包する／既配置と safety_margin 0.015 以上離れる／搬入軌道(Y→X押し込み)が干渉しない」を自前簡易チェックし、最初の有効候補を返す
+  - [ ] place_pos は**荷物中心の相対座標**（原点 offset_x=container_idx*spacing）・np.float32
+  - [ ] item_idx は pool_list 範囲内（終盤プールが縮む点に注意）
+- [ ] タイムアウト対策: policy を 8秒/1手 に収める（全探索は不可）。**高速な有効手のフォールバック**必須（超過＝ランダム強制で崩壊）
+- [ ] `status` が "completed successfully" になる config を1つ作り、回帰確認用にする
 
 ## フェーズ2: スコアを上げる（Week 3-5）
 > 100点＝重み付き平均。効く順に潰す。experiments.md にスコア内訳で記録。
