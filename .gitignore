@@ -1,0 +1,35 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# 機密（絶対にコミットしないもの）
+secrets/
+*.key
+*.pem
+.env
+.env.*
+
+# データ・大容量（コンペのデータセット等）
+**/data/
+*.csv.gz
+*.parquet
+*.zip
+*.7z
+# ↑ 台帳など「管理したいCSV」は各領域で個別に !否定指定 すること
+!40_keiba/**/*.csv
+
+# Python / notebook 作業物
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+venv/
+*.egg-info/
+
+# ログ・一時
+*.log
+tmp/
+scratch/
