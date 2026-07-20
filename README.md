@@ -4,6 +4,8 @@
 
 すべて Markdown + Git で管理。数値も記録もバージョン管理され、オフラインでも grep 検索できる。
 
+> 持ち主のプロフィール（人物像・思考特性・文体の好み）は [PROFILE.md](PROFILE.md) を参照。
+
 ## ダッシュボード
 - **[👉 いま](00_dashboard/now.md)** — 今フォーカスしていること
 - [週次振り返り](00_dashboard/weekly-review.md)
