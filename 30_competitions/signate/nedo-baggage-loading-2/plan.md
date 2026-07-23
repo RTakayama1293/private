@@ -5,10 +5,25 @@
 > 締切 2026-10-19。チーム結成期限 2026-09-04。投稿は1日5回まで。仮説→検証で回す。
 > 仕様の詳細は [simulator-notes.md](simulator-notes.md)。CLI手順は [../../signate-cli.md](../../signate-cli.md)。
 
-## 現状（2026-07-20）
-- [x] SIGNATE CLI 導入・トークン取得（Anaconda）。task_key/file_key 特定済み。
-- [x] simulator.zip DL・展開・仕様解析済み（`data/` 配下、gitignore）。
-- [ ] ↓ 次はローカル実行環境を通して、有効ベースラインを1本提出する。
+## 現状（2026-07-23）
+- [x] SIGNATE CLI 導入・トークン取得（Anaconda）。task_key/file_key 特定済み（[../../signate-cli.md](../../signate-cli.md)）。
+- [x] simulator.zip DL・展開・仕様解析済み（`data/` 配下、gitignore）。仕様は [simulator-notes.md](simulator-notes.md)。
+- [x] **環境方針＝Docker に決定**（下記 環境方針）。ただし WSL2/Docker は未導入。
+- [ ] ↓ 次: WSL2+Docker導入 → サンプル実行 → 有効ベースラインを1本提出する。
+
+## 環境方針（意思決定 2026-07-23）
+- **決定**: 開発・検証環境は Docker に統一する。
+- **理由**: 配布の Dockerfile が評価基盤そのもの（ubuntu24.04 + py3.12 + gymnasium1.2.3/pybullet3.2.7/pillow10.3.0/torch2.7.0cpu）。バージョン一致で「ローカルで積めたのに提出で落ちる/スコアがずれる」を構造的に防ぐ。PyBulletは物理が環境依存でぶれ得るため一致が効く。冪等性・再現性も高い。
+- **前提コスト**: WSL2 + Docker Desktop の導入（管理者権限・再起動が必要。ユーザー自身で実施）。
+- **GUI**: X11不要。`"visualizer":{"vis":true}` でステップPNGを出力し、ボリュームマウント経由でWindowsから確認する。
+- **懸念/保留**: RL学習はCPU版torchのため遅い。学習に入るなら別途GPU環境を検討（推論・評価はDockerのまま）。
+
+### 再開手順（再起動でセッションが消えても、ここから）
+1. 管理者PowerShellで `wsl --install` → 再起動
+2. Docker Desktop 導入・WSL2 backend 有効化（`docker --version` が通ればOK）
+3. `cd data/simulator/simulator && docker compose up -d`（評価基盤と同環境のコンテナ `gh_env` が起動、`.` が `/workspace` にマウント）
+4. コンテナ内で `python -m scripts.run_test`（サンプル疎通）→ 成功したらフェーズ1へ
+5. `data/` が消えていたら simulator.zip を CLI で再取得（signate-cli.md のキー使用）
 
 ## 最優先（今すぐ〜数日）— ローカルで一周させる
 - [ ] 実行環境を用意（Python 3.10〜3.12）。Anaconda に専用env推奨:
