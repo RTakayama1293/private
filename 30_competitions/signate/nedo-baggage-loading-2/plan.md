@@ -18,12 +18,12 @@
 - **GUI**: X11不要。`"visualizer":{"vis":true}` でステップPNGを出力し、ボリュームマウント経由でWindowsから確認する。
 - **懸念/保留**: RL学習はCPU版torchのため遅い。学習に入るなら別途GPU環境を検討（推論・評価はDockerのまま）。
 
-### 再開手順（再起動でセッションが消えても、ここから）
-1. 管理者PowerShellで `wsl --install` → 再起動
-2. Docker Desktop 導入・WSL2 backend 有効化（`docker --version` が通ればOK）
-3. `cd data/simulator/simulator && docker compose up -d`（評価基盤と同環境のコンテナ `gh_env` が起動、`.` が `/workspace` にマウント）
-4. コンテナ内で `python -m scripts.run_test`（サンプル疎通）→ 成功したらフェーズ1へ
-5. `data/` が消えていたら simulator.zip を CLI で再取得（signate-cli.md のキー使用）
+### 再開手順（セッションが消えても、ここから）
+> 2026-07-24: WSL2 は導入済み（v2.7.10、既定v2）。`wsl --install`のUbuntu DLは不要でキャンセル。Docker DesktopだけでOK。
+1. Docker Desktop 導入（WSL2 backend既定ON。自前の `docker-desktop` ディストロを使うのでUbuntu不要）。`docker --version` が通ればOK。
+2. `cd data/simulator/simulator && docker compose up -d`（評価基盤と同環境のコンテナ `gh_env` が起動、`.` が `/workspace` にマウント）
+3. コンテナ内で `python -m scripts.run_test`（サンプル疎通）→ 成功したらフェーズ1へ
+4. `data/` が消えていたら simulator.zip を CLI で再取得（signate-cli.md のキー使用）
 
 ## 最優先（今すぐ〜数日）— ローカルで一周させる
 - [ ] 実行環境を用意（Python 3.10〜3.12）。Anaconda に専用env推奨:

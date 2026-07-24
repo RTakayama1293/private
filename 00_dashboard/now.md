@@ -30,13 +30,13 @@
   - 詳細: [コンペ概要](../30_competitions/signate/nedo-baggage-loading-2/overview.md) / [仕様メモ](../30_competitions/signate/nedo-baggage-loading-2/simulator-notes.md) / [やること](../30_competitions/signate/nedo-baggage-loading-2/plan.md) / [CLI](../30_competitions/signate-cli.md)
 - **環境方針を Docker に決定**（評価基盤と完全一致・冪等性のため）。ただし WSL2/Docker未導入なのでこれから入れる。
 
-**再開手順（再起動後にやること）**
-1. 管理者PowerShellで `wsl --install` → 再起動
-2. Docker Desktop を導入し WSL2 backend を有効化（`docker --version` が通ればOK）
-3. `cd 30_competitions/signate/nedo-baggage-loading-2/data/simulator/simulator`
-4. `docker compose up -d` でビルド＆起動 → コンテナ内(`/workspace`)で `python -m scripts.run_test`
+**再開手順（次にやること）**
+> 2026-07-24 時点: WSL2 は導入済み（v2.7.10、既定v2）。`wsl --install` のUbuntu DLは不要だったのでキャンセル済み。
+1. Docker Desktop を導入（WSL2 backend既定ON）。`docker --version` が通ればOK。Ubuntuディストロは不要。
+2. `cd 30_competitions/signate/nedo-baggage-loading-2/data/simulator/simulator`
+3. `docker compose up -d` でビルド＆起動 → コンテナ内(`/workspace`)で `python -m scripts.run_test`
    （simulator.zip は `data/` にDL済み。gitignoreなので新セッションで消えていたら CLI で再取得: [signate-cli.md](../30_competitions/signate-cli.md) 参照）
-5. サンプルが動いたら、ベースライン `agent.py` 実装へ（plan.md フェーズ1）
+4. サンプルが動いたら、ベースライン `agent.py` 実装へ（plan.md フェーズ1）
 
 ## 気になっていること / あとで考える
 - コンペ: 個人参加 or チーム（結成期限 2026-09-04）
